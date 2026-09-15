@@ -15,6 +15,7 @@ func _ready() -> void:
 func reset(seed_value: int = -1) -> void:
 	course.reset(seed_value)
 	player.reset(course.settings.ground)
+	player.visual.reset_animation()
 	effects.clear()
 	relic_count = 0
 	broken = 0
@@ -27,6 +28,7 @@ func _physics_process(delta: float) -> void:
 func step(delta: float) -> void:
 	effects.step(delta)
 	player.step(delta, course)
+	player.visual.advance_animation(delta, player)
 	if not player.dead:
 		course.ensure_ahead(player.x)
 		_update_score()

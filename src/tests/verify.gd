@@ -37,6 +37,7 @@ func run() -> void:
 	session.set_physics_process(false)
 	game = session.player
 	verify_composition()
+	verify_animation()
 	runway()
 	jump()
 	var held_peak: float = game.y
@@ -154,6 +155,57 @@ func run() -> void:
 	print("VERIFIED: %d checks, %d failures" % [checks, failures])
 	session.free()
 	quit(1 if failures else 0)
+
+func verify_animation() -> void:
+	runway()
+	var visual := game.visual
+	# Changing speed or the elapsed-time origin must not rephase the run cycle.
+	game.elapsed = 100.0
+	session.refresh_view()
+	check(visual.frame == 0, "Refreshing the view cannot advance animation")
+	var changes := 0
+	var previous := visual.frame
+	for tick in range(120):
+		session.step(DT)
+		if visual.frame != previous:
+			changes += 1
+			check(visual.frame == (previous + 1) % 8, "Running visits frames in order")
+		previous = visual.frame
+		var screen_x: float = visual.global_position.x - session.camera.position.x
+		check(is_equal_approx(screen_x, -104.0), "Sprite stays at a fixed horizontal camera offset")
+	check(changes >= 19 and changes <= 21, "Late-ramp cadence follows current speed without double acceleration")
+	var resume_frame := visual.frame
+	game.grounded = false
+	game.vy = -1.0
+	visual.advance_animation(0.5, game)
+	session.refresh_view()
+	check(visual.frame == 8 and visual.offset == Vector2.ZERO, "Ascent uses its original pose alignment")
+	game.vy = 1.0
+	session.refresh_view()
+	check(visual.frame == 9, "Descent uses its original pose")
+	game.start_dash()
+	visual.advance_animation(0.5, game)
+	session.refresh_view()
+	check(visual.frame == 10 and visual.offset == Vector2.ZERO, "Dash uses its original pose alignment")
+	game.dash_left = 0.0
+	game.grounded = true
+	session.refresh_view()
+	check(visual.frame == resume_frame, "Landing resumes the run cycle without a phase jump")
+	game.die()
+	session.refresh_view()
+	check(visual.frame == 11 and visual.offset == Vector2.ZERO, "Death uses its original pose alignment")
+	runway()
+	check(visual.frame == 0 and visual.offset == Vector2.ZERO, "Retry resets animation and alignment")
+	# The authored head/torso is identical across run frames after registration.
+	var reference := visual.sprite_frames.get_frame_texture(&"poses", 0).get_image()
+	var aligned := true
+	for pose in range(8):
+		var source := visual.sprite_frames.get_frame_texture(&"poses", pose).get_image()
+		var shift := int(RunnerPlayerVisual.RUN_Y_OFFSETS[pose])
+		for y in range(2, 22):
+			for x in range(12, 42):
+				aligned = aligned and reference.get_pixel(x, y) == source.get_pixel(x, y - shift)
+	check(aligned, "Running head and torso pixels share a stable anchor")
 
 func verify_course() -> void:
 	var course := Course.instantiate() as RunnerCourse
