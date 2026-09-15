@@ -1,0 +1,29 @@
+[gd_scene load_steps=8 format=3]
+[ext_resource type="Script" path="res://game/world/platform.gd" id="script"]
+[ext_resource type="Texture2D" path="res://assets/platform_224.png" id="texture"]
+[ext_resource type="Texture2D" path="res://assets/platform_224.png" id="224"]
+[ext_resource type="Texture2D" path="res://assets/platform_256.png" id="256"]
+[ext_resource type="Texture2D" path="res://assets/platform_288.png" id="288"]
+[ext_resource type="Texture2D" path="res://assets/platform_512.png" id="512"]
+
+[sub_resource type="RectangleShape2D" id="shape"]
+resource_local_to_scene = true
+size = Vector2(224, 110)
+
+[node name="Platform" type="Area2D"]
+script = ExtResource("script")
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+textures = Array[Texture2D]([ExtResource("224"), ExtResource("256"), ExtResource("288"), ExtResource("512")])
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("texture")
+centered = false
+position = Vector2(0, -1)
+texture_repeat = 2
+
+[node name="Hitbox" type="CollisionShape2D" parent="."]
+shape = SubResource("shape")
+position = Vector2(112, 55)

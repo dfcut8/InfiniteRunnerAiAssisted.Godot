@@ -1,0 +1,11 @@
+[gd_scene load_steps=5 format=3]
+[ext_resource type="Script" path="res://game/effects/effects.gd" id="script"]
+[ext_resource type="PackedScene" path="res://game/effects/gold.tscn" id="gold"]
+[ext_resource type="PackedScene" path="res://game/effects/ivory.tscn" id="ivory"]
+[ext_resource type="PackedScene" path="res://game/effects/ghost.tscn" id="ghost"]
+
+[node name="Effects" type="Node2D"]
+script = ExtResource("script")
+gold_particle = ExtResource("gold")
+ivory_particle = ExtResource("ivory")
+ghost_scene = ExtResource("ghost")

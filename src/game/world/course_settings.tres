@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="RunnerCourseSettings" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/world/course_settings.gd" id="script"]
+[ext_resource type="Resource" path="res://game/player/movement.tres" id="movement"]
+
+[resource]
+script = ExtResource("script")
+movement = ExtResource("movement")
+ground = 132.0
+opening_left = -128.0
+opening_right = 384.0
+look_ahead = 720.0
+retire_distance = 180.0
+platform_lengths = Array[int]([224, 256, 288])
+easy_seconds = 8.0
+height_change_seconds = 20.0
+easy_gap = 20.0
+minimum_gap = 24.0
+early_maximum_gap = 32.0
+late_maximum_gap = 56.0
+height_step = 8.0
+height_range = 16.0
+relic_height = 14.4
+relic_arch = Array[float]([12.8, 28.0, 36.8, 28.0, 12.8])
+arch_probability = 0.5
+relic_start_offset = 20.0
+relic_spacing = 13.6
+opening_relic_start = 64.0
+opening_relic_spacing = 16.0
+stone_offset = 96.0
+stone_spacing = 206.4
+stone_probability = 0.85

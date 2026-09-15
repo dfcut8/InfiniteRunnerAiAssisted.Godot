@@ -1,0 +1,169 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="Script" path="res://game/ui/hud.gd" id="script"]
+[ext_resource type="Theme" path="res://game/ui/theme.tres" id="theme"]
+
+[node name="Controls" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("script")
+theme = ExtResource("theme")
+
+[node name="TopBar" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 17.0
+mouse_filter = 2
+anchor_right = 1.0
+
+[node name="Divider" type="ColorRect" parent="TopBar"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 16.0
+offset_right = 0.0
+offset_bottom = 17.0
+mouse_filter = 2
+anchor_right = 1.0
+color = Color(0.145098, 0.176471, 0.196078, 1)
+
+[node name="Score" type="Label" parent="TopBar"]
+layout_mode = 0
+offset_left = 7.0
+offset_top = 5.0
+offset_right = 97.0
+offset_bottom = 12.0
+mouse_filter = 2
+unique_name_in_owner = true
+text = "SCORE 000000"
+
+[node name="Relics" type="Label" parent="TopBar"]
+layout_mode = 0
+offset_left = -96.0
+offset_top = 5.0
+offset_right = -6.0
+offset_bottom = 12.0
+mouse_filter = 2
+unique_name_in_owner = true
+text = "RELICS 000"
+theme_override_colors/font_color = Color(0.709804, 0.541176, 0.262745, 1)
+anchor_left = 1.0
+anchor_right = 1.0
+horizontal_alignment = 2
+
+[node name="DashPanel" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 5.0
+offset_top = -22.0
+offset_right = 83.0
+offset_bottom = -2.0
+mouse_filter = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+
+[node name="DashLabel" type="Label" parent="DashPanel"]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = 73.0
+offset_bottom = 10.0
+mouse_filter = 2
+unique_name_in_owner = true
+text = "DASH READY"
+theme_override_colors/font_color = Color(0.709804, 0.811765, 0.513725, 1)
+
+[node name="DashCharge" type="ProgressBar" parent="DashPanel"]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 14.0
+offset_right = 73.0
+offset_bottom = 17.0
+mouse_filter = 2
+unique_name_in_owner = true
+max_value = 70.0
+value = 70.0
+show_percentage = false
+
+[node name="Instructions" type="Panel" parent="."]
+layout_mode = 0
+offset_left = -99.0
+offset_top = -24.0
+offset_right = -3.0
+offset_bottom = -2.0
+mouse_filter = 2
+unique_name_in_owner = true
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_top = 1.0
+anchor_bottom = 1.0
+
+[node name="JumpHelp" type="Label" parent="Instructions"]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 3.0
+offset_right = 89.0
+offset_bottom = 10.0
+mouse_filter = 2
+unique_name_in_owner = true
+text = "SPACE / Z  JUMP"
+
+[node name="DashHelp" type="Label" parent="Instructions"]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 13.0
+offset_right = 89.0
+offset_bottom = 20.0
+mouse_filter = 2
+unique_name_in_owner = true
+text = "SHIFT / X  DASH"
+theme_override_colors/font_color = Color(0.709804, 0.811765, 0.513725, 1)
+
+[node name="DeathPanel" type="Panel" parent="."]
+layout_mode = 0
+offset_left = -56.0
+offset_top = -27.0
+offset_right = 56.0
+offset_bottom = 22.0
+mouse_filter = 2
+unique_name_in_owner = true
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+theme_type_variation = &"DeathPanel"
+
+[node name="Accent" type="ColorRect" parent="DeathPanel"]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 107.0
+offset_bottom = 6.0
+mouse_filter = 2
+color = Color(0.384314, 0.521569, 0.282353, 1)
+
+[node name="EndedLabel" type="Label" parent="DeathPanel"]
+layout_mode = 0
+offset_left = 29.0
+offset_top = 14.0
+offset_right = 89.0
+offset_bottom = 21.0
+mouse_filter = 2
+unique_name_in_owner = true
+text = "RUN ENDED"
+
+[node name="RetryLabel" type="Label" parent="DeathPanel"]
+layout_mode = 0
+offset_left = 26.0
+offset_top = 32.0
+offset_right = 92.0
+offset_bottom = 39.0
+mouse_filter = 2
+unique_name_in_owner = true
+text = "R TO RETRY"
+theme_override_colors/font_color = Color(0.709804, 0.541176, 0.262745, 1)

@@ -1,6 +1,58 @@
-[gd_scene load_steps=2 format=3]
-
-[ext_resource type="Script" path="res://game/runner.gd" id="1"]
+[gd_scene load_steps=8 format=3]
+[ext_resource type="Script" path="res://game/runner.gd" id="script"]
+[ext_resource type="Script" path="res://game/player/player_input.gd" id="input"]
+[ext_resource type="PackedScene" path="res://game/world/background.tscn" id="background"]
+[ext_resource type="PackedScene" path="res://game/world/course.tscn" id="course"]
+[ext_resource type="PackedScene" path="res://game/player/player.tscn" id="player"]
+[ext_resource type="PackedScene" path="res://game/effects/effects.tscn" id="effects"]
+[ext_resource type="PackedScene" path="res://game/ui/hud.tscn" id="hud"]
 
 [node name="PixelUnicornRunner" type="Node2D"]
-script = ExtResource("1")
+script = ExtResource("script")
+texture_filter = 1
+
+[node name="Backdrop" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="Background" parent="Backdrop" instance=ExtResource("background")]
+z_index = -1
+show_behind_parent = true
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="Course" parent="World" instance=ExtResource("course")]
+
+[node name="Effects" parent="World" instance=ExtResource("effects")]
+z_index = 2
+
+[node name="Player" parent="World" instance=ExtResource("player")]
+z_index = 1
+
+[node name="Camera2D" type="Camera2D" parent="World"]
+position = Vector2(80, 90)
+position_smoothing_enabled = false
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="Controls" parent="HUD" instance=ExtResource("hud")]
+
+[node name="Input" type="Node" parent="."]
+script = ExtResource("input")
+
+[connection signal="jump_pressed" from="Input" to="World/Player" method="request_jump"]
+
+[connection signal="jump_released" from="Input" to="World/Player" method="release_jump"]
+
+[connection signal="dash_pressed" from="Input" to="World/Player" method="start_dash"]
+
+[connection signal="retry_pressed" from="Input" to="." method="_on_retry_pressed"]
+
+[connection signal="burst_requested" from="World/Player" to="World/Effects" method="burst"]
+
+[connection signal="ghost_requested" from="World/Player" to="World/Effects" method="ghost"]
+
+[connection signal="relic_collected" from="World/Player" to="." method="_on_relic_collected"]
+
+[connection signal="stone_broken" from="World/Player" to="." method="_on_stone_broken"]
+
+[connection signal="died" from="World/Player" to="." method="_update_score"]

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RunnerMovementSettings" load_steps=2 format=3]
+[ext_resource type="Script" path="res://game/player/movement_settings.gd" id="1"]
+[resource]
+script = ExtResource("1")
+initial_speed = 80.0
+maximum_speed = 144.0
+ramp_seconds = 120.0
+gravity = 448.0
+jump_velocity = -144.0
+jump_cut = 0.45
+coyote_seconds = 0.1
+buffer_seconds = 0.12
+dash_seconds = 0.2
+dash_multiplier = 2.0
+cooldown_seconds = 0.7

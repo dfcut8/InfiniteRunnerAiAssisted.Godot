@@ -11,15 +11,58 @@ reloading the project settings. Gameplay starts immediately.
 
 The game renders at 320 × 180, scales by whole integers, and centers with black
 borders. Resize the window freely (minimum 320 × 180). There is no audio, menu,
-persistence, or external asset dependency. All art and 5 × 7 glyphs are original
-pixel drawings using the eight requested colors.
+persistence, or third-party asset dependency. Original pixel art and 5 × 7 glyphs
+are stored in `src/assets` as PNG textures and a bitmap font.
 
 ## Implementation
 
-`src/game/runner.gd` owns the fixed 120 Hz movement, swept platform collisions,
-input buffering, scoring and transient effects. `course.gd` streams and retires
-course data. `pixel_art.gd` renders world layers and the HUD in one logical
-viewport. The reusable entry scene is `runner.tscn`.
+Open `src/game/runner.tscn` to edit the composed game:
+
+```text
+PixelUnicornRunner               session, score, reset, fixed 120 Hz tick
+├── Backdrop/Background          repeated texture strips on a stationary canvas
+├── World
+│   ├── Course                   instances and retires terrain/entity scenes
+│   ├── Effects                  particle and dash-ghost scene instances
+│   ├── Player                   movement and jump/dash state
+│   │   ├── Visual               AnimatedSprite2D with external SpriteFrames
+│   │   ├── Hitbox               Inspector-editable RectangleShape2D
+│   │   └── CollisionResolver    swept collision rules
+│   └── Camera2D
+├── HUD/Controls                 Control nodes, Labels, Panels, ProgressBar
+└── Input                        Input Map actions, connected through signals
+```
+
+### Editing the game
+
+| Change | Scene or resource under `src/game` |
+| --- | --- |
+| Player silhouette, frames, hitbox | `player/player.tscn`, `player/unicorn_frames.tres` |
+| Jump, gravity, speed ramp, dash | `player/movement.tres` |
+| Course lengths, gaps, heights, pickup/obstacle placement | `world/course_settings.tres` |
+| Terrain art and collision shape | `world/platform.tscn` |
+| Pickup and obstacle art/hitboxes | `world/relic.tscn`, `world/runestone.tscn` |
+| Background layout and scrolling | `world/background.tscn` |
+| Particle textures and lifetimes | `effects/gold.tscn`, `effects/ivory.tscn`, `effects/ghost.tscn` |
+| HUD layout, typography, colors | `ui/hud.tscn`, `ui/theme.tres` |
+
+The course and player share the movement resource so projected arrival times
+follow the configured speed ramp. Course generation still runs in code because
+the world is endless; it instantiates authored PackedScenes instead of creating
+node trees or drawing shapes. PNGs are the editable art sources; no runtime art
+generator is required. Terrain uses authored texture variants for its standard
+widths and repeats a texture for custom widths.
+
+Entity roots are Area2D nodes with authored collision shapes. Monitoring is
+disabled because the collision component explicitly tests those bounds each
+fixed tick, including swept front faces. This preserves dash timing, coyote time,
+and masonry collision behavior. Movement doesn't use `move_and_slide()`.
+Platform shapes are local to each scene instance so resizing one platform
+doesn't resize every platform. Signals connect input, rewards, death and effects
+in the main scene. Runtime state belongs to nodes; shared resources are read-only.
+
+If the editor was already open during the refactor, restart it once to reload
+the new Jump/Dash/Retry Input Map actions from `project.godot`.
 
 Terrain difficulty uses projected arrival time derived from the speed integral.
 Platforms change height by at most eight pixels, and a full single jump clears
@@ -39,6 +82,9 @@ buffering, dash timing/velocity/cooldown, collision deaths, one-time rewards,
 score freeze, full reset, and render-frame-rate independence. The terrain sweep
 covers 20 seeds and 12 million pixels; an input-driven bot also attempts five
 four-minute runs through the speed ramp using single jumps and dashes.
+Scene checks also cover input signal wiring, shared movement configuration,
+independent platform shapes, deterministic generation, node cleanup, and HUD
+state after death/retry. Tests instantiate the actual game and course scenes.
 
 For actual rendered review and window transform diagnostics:
 
@@ -46,4 +92,4 @@ For actual rendered review and window transform diagnostics:
 godot --path src --script res://tests/capture.gd
 ```
 
-This writes opening, jumping and death previews in the repository root.
+This writes opening, jumping, dashing and death previews in the repository root.
