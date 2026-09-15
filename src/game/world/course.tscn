@@ -1,0 +1,19 @@
+[gd_scene load_steps=6 format=3]
+[ext_resource type="Script" path="res://game/course.gd" id="script"]
+[ext_resource type="Resource" path="res://game/world/course_settings.tres" id="settings"]
+[ext_resource type="PackedScene" path="res://game/world/platform.tscn" id="platform"]
+[ext_resource type="PackedScene" path="res://game/world/relic.tscn" id="relic"]
+[ext_resource type="PackedScene" path="res://game/world/runestone.tscn" id="runestone"]
+
+[node name="Course" type="Node2D"]
+script = ExtResource("script")
+settings = ExtResource("settings")
+platform_scene = ExtResource("platform")
+relic_scene = ExtResource("relic")
+stone_scene = ExtResource("runestone")
+
+[node name="Platforms" type="Node2D" parent="."]
+
+[node name="Relics" type="Node2D" parent="."]
+
+[node name="Runestones" type="Node2D" parent="."]

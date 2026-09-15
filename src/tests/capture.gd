@@ -1,15 +1,16 @@
 extends SceneTree
 ## Render the actual game viewport for visual regression review.
-const Runner = preload("res://game/runner.gd")
+const Runner = preload("res://game/runner.tscn")
 
 func _initialize() -> void:
 	call_deferred("capture")
 
 func capture() -> void:
-	var game := Runner.new()
-	root.add_child(game)
-	game.set_physics_process(false)
-	game.reset(21)
+	var session := Runner.instantiate()
+	var game: RunnerPlayer = session.get_node("World/Player")
+	root.add_child(session)
+	session.set_physics_process(false)
+	session.reset(21)
 	await process_frame
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://../preview.png")
@@ -18,12 +19,17 @@ func capture() -> void:
 	game.y = 111.0
 	game.grounded = false
 	game.vy = -70.0
-	game.queue_redraw()
+	session.refresh_view()
 	await process_frame
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://../preview-jump.png")
+	game.start_dash()
+	session.step(1.0 / 120.0)
+	await process_frame
+	await RenderingServer.frame_post_draw
+	root.get_texture().get_image().save_png("res://../preview-dash.png")
 	game.die()
-	game.queue_redraw()
+	session.refresh_view()
 	await process_frame
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://../preview-death.png")

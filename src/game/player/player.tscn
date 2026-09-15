@@ -1,0 +1,32 @@
+[gd_scene load_steps=7 format=3]
+[ext_resource type="Script" path="res://game/player/player.gd" id="script"]
+[ext_resource type="Script" path="res://game/player/player_visual.gd" id="visual"]
+[ext_resource type="Script" path="res://game/player/collision_resolver.gd" id="collision"]
+[ext_resource type="Resource" path="res://game/player/movement.tres" id="settings"]
+[ext_resource type="SpriteFrames" path="res://game/player/unicorn_frames.tres" id="frames"]
+
+[sub_resource type="RectangleShape2D" id="body"]
+size = Vector2(18, 20)
+
+[node name="Player" type="Area2D"]
+script = ExtResource("script")
+settings = ExtResource("settings")
+position = Vector2(0, 132)
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
+
+[node name="Visual" type="AnimatedSprite2D" parent="."]
+script = ExtResource("visual")
+sprite_frames = ExtResource("frames")
+animation = &"poses"
+centered = false
+position = Vector2(-24, -32)
+
+[node name="Hitbox" type="CollisionShape2D" parent="."]
+shape = SubResource("body")
+position = Vector2(0, -10)
+
+[node name="CollisionResolver" type="Node" parent="."]
+script = ExtResource("collision")

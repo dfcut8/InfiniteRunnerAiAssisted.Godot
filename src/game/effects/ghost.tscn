@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="Script" path="res://game/effects/effect.gd" id="script"]
+[ext_resource type="Texture2D" path="res://assets/ghost.png" id="texture"]
+
+[node name="Ghost" type="Sprite2D"]
+script = ExtResource("script")
+texture = ExtResource("texture")
+centered = false
+z_index = -2
+lifetime = 0.13
+gravity = 0.0
+offset = Vector2(-24, -32)

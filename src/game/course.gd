@@ -1,10 +1,14 @@
-extends RefCounted
-## Bounded, deterministic-for-a-seed course data in logical pixels.
-const GROUND := 132.0
+class_name RunnerCourse
+extends Node2D
+## Streams reusable entity scenes, deterministically for a seed.
+@export var settings: RunnerCourseSettings
+@export var platform_scene: PackedScene
+@export var relic_scene: PackedScene
+@export var stone_scene: PackedScene
 var rng := RandomNumberGenerator.new()
-var platforms: Array[Dictionary] = []
-var relics: Array[Dictionary] = []
-var stones: Array[Dictionary] = []
+var platforms: Array[CourseEntity] = []
+var relics: Array[CourseEntity] = []
+var stones: Array[CourseEntity] = []
 var last_stone := -1000.0
 
 func reset(seed_value: int = -1) -> void:
@@ -12,44 +16,86 @@ func reset(seed_value: int = -1) -> void:
 		rng.randomize()
 	else:
 		rng.seed = seed_value
-	platforms.clear()
-	relics.clear()
-	stones.clear()
+	clear_entities(platforms)
+	clear_entities(relics)
+	clear_entities(stones)
 	last_stone = -1000.0
-	platforms.append({"x": -128.0, "end": 384.0, "y": GROUND})
-	for i in range(5):
-		relics.append({"x": 64.0 + i * 16.0, "y": GROUND - 14.4})
+	add_platform(settings.opening_left, settings.opening_right, settings.ground)
+	for i in range(settings.relic_arch.size()):
+		add_relic(settings.opening_relic_start + i * settings.opening_relic_spacing, settings.ground - settings.relic_height)
 	# Preserve all 24 units of safe runway; hazards begin on later platforms.
 	ensure_ahead(0.0)
 
 func arrival_time(x: float) -> float:
-	# Integral of speed: x = 80t + (64/240)t² until 120 seconds.
-	if x <= 13440.0:
-		return (-80.0 + sqrt(6400.0 + 4.0 * (64.0 / 240.0) * x)) / (128.0 / 240.0)
-	return 120.0 + (x - 13440.0) / 144.0
+	# Use the same movement resource as the player when projecting difficulty.
+	var movement := settings.movement
+	var ramp := maxf(movement.ramp_seconds, 0.00001)
+	var acceleration := (movement.maximum_speed - movement.initial_speed) / ramp
+	var ramp_distance := (movement.initial_speed + movement.maximum_speed) * ramp * 0.5
+	if x <= ramp_distance:
+		if is_zero_approx(acceleration):
+			return x / movement.initial_speed
+		return (-movement.initial_speed + sqrt(movement.initial_speed ** 2 + 2.0 * acceleration * x)) / acceleration
+	return ramp + (x - ramp_distance) / movement.maximum_speed
 
 func ensure_ahead(x: float) -> void:
-	while float(platforms.back().end) < x + 720.0:
-		var previous: Dictionary = platforms.back()
+	while platforms.back().end < x + settings.look_ahead:
+		var previous: CourseEntity = platforms.back()
 		var t := arrival_time(float(previous.end))
-		var gap := 20.0 if t < 8.0 else rng.randf_range(24.0, lerpf(32.0, 56.0, clampf((t - 8.0) / 112.0, 0.0, 1.0)))
+		var difficulty := clampf((t - settings.easy_seconds) / maxf(settings.movement.ramp_seconds - settings.easy_seconds, 0.00001), 0.0, 1.0)
+		var gap := settings.easy_gap if t < settings.easy_seconds else rng.randf_range(settings.minimum_gap, lerpf(settings.early_maximum_gap, settings.late_maximum_gap, difficulty))
 		var y := float(previous.y)
-		if t >= 20.0:
-			y = clampf(y + float(rng.randi_range(-1, 1)) * 8.0, GROUND - 16.0, GROUND + 16.0)
+		if t >= settings.height_change_seconds:
+			y = clampf(y + float(rng.randi_range(-1, 1)) * settings.height_step, settings.ground - settings.height_range, settings.ground + settings.height_range)
 		var start := float(previous.end) + gap
-		var length := float([224, 256, 288][rng.randi_range(0, 2)])
-		platforms.append({"x": start, "end": start + length, "y": y})
-		var arch := rng.randf() < 0.5
-		for i in range(5):
-			var height := 14.4
+		var length := float(settings.platform_lengths[rng.randi_range(0, settings.platform_lengths.size() - 1)])
+		add_platform(start, start + length, y)
+		var arch := rng.randf() < settings.arch_probability
+		for i in range(settings.relic_arch.size()):
+			var height := settings.relic_height
 			if arch:
-				height = [12.8, 28.0, 36.8, 28.0, 12.8][i]
-			relics.append({"x": start + 20.0 + i * 13.6, "y": y - height})
-		var stone_x := start + 96.0
-		if stone_x - last_stone >= 206.4 and rng.randf() < 0.85:
-			stones.append({"x": stone_x, "y": y})
+				height = settings.relic_arch[i]
+			add_relic(start + settings.relic_start_offset + i * settings.relic_spacing, y - height)
+		var stone_x := start + settings.stone_offset
+		if stone_x - last_stone >= settings.stone_spacing and rng.randf() < settings.stone_probability:
+			add_stone(stone_x, y)
 			last_stone = stone_x
-	while platforms.size() > 1 and float(platforms[0].end) < x - 180.0:
-		platforms.pop_front()
-	relics = relics.filter(func(r: Dictionary) -> bool: return float(r.x) > x - 180.0)
-	stones = stones.filter(func(s: Dictionary) -> bool: return float(s.x) > x - 180.0)
+
+	while platforms.size() > 1 and platforms[0].end < x - settings.retire_distance:
+		retire(platforms, 0)
+	for entities in [relics, stones]:
+		for i in range(entities.size() - 1, -1, -1):
+			if entities[i].x < x - settings.retire_distance:
+				retire(entities, i)
+
+func add_platform(left: float, right: float, top: float) -> CourseEntity:
+	var entity := _spawn(platform_scene, $Platforms, Vector2(left, top))
+	entity.set_width(right - left)
+	platforms.append(entity)
+	return entity
+
+func add_relic(x: float, y: float) -> CourseEntity:
+	var entity := _spawn(relic_scene, $Relics, Vector2(x, y))
+	relics.append(entity)
+	return entity
+
+func add_stone(x: float, y: float) -> CourseEntity:
+	var entity := _spawn(stone_scene, $Runestones, Vector2(x, y))
+	stones.append(entity)
+	return entity
+
+func _spawn(scene: PackedScene, container: Node, at: Vector2) -> CourseEntity:
+	var entity := scene.instantiate() as CourseEntity
+	entity.position = at
+	container.add_child(entity)
+	return entity
+
+func retire(entities: Array[CourseEntity], index: int) -> void:
+	var entity := entities[index]
+	entities.remove_at(index)
+	entity.get_parent().remove_child(entity)
+	entity.queue_free()
+
+func clear_entities(entities: Array[CourseEntity]) -> void:
+	while not entities.is_empty():
+		retire(entities, entities.size() - 1)
