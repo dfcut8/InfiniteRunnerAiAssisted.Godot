@@ -53,6 +53,12 @@ node trees or drawing shapes. PNGs are the editable art sources; no runtime art
 generator is required. Terrain uses authored texture variants for its standard
 widths and repeats a texture for custom widths.
 
+The unicorn visual registers the running frames to a shared head/torso anchor
+with pixel offsets, preserving the original PNGs and nearest-neighbor style.
+Its run clock advances at 12 fps scaled by current speed, pauses during airborne
+and dash poses, and resets on retry. The sprite uses the camera's pixel-floor
+alignment so fractional world movement does not produce sideways shimmer.
+
 Entity roots are Area2D nodes with authored collision shapes. Monitoring is
 disabled because the collision component explicitly tests those bounds each
 fixed tick, including swept front faces. This preserves dash timing, coyote time,
@@ -92,4 +98,5 @@ For actual rendered review and window transform diagnostics:
 godot --path src --script res://tests/capture.gd
 ```
 
-This writes opening, jumping, dashing and death previews in the repository root.
+This writes opening, jumping, dashing and death previews in the repository root,
+plus `preview-run-cycle.png` showing all eight run poses and the loop seam.

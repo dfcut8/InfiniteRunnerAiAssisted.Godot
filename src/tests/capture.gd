@@ -14,6 +14,16 @@ func capture() -> void:
 	await process_frame
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://../preview.png")
+	# Review every running pose at the same screen anchor, including the wrap.
+	var run_strip := Image.create(48 * 9, 40, false, Image.FORMAT_RGBA8)
+	for pose in range(9):
+		session.refresh_view()
+		await process_frame
+		await RenderingServer.frame_post_draw
+		run_strip.blit_rect(root.get_texture().get_image(), Rect2i(56, 96, 48, 40), Vector2i(pose * 48, 0))
+		game.visual.advance_animation(1.0 / 12.0, game)
+	run_strip.resize(48 * 9 * 3, 40 * 3, Image.INTERPOLATE_NEAREST)
+	run_strip.save_png("res://../preview-run-cycle.png")
 	game.x = 475.0
 	game.elapsed = 6.0
 	game.y = 111.0
